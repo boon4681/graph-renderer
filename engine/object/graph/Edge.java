@@ -1,9 +1,12 @@
-package engine.graph;
+package engine.object.graph;
+
 import java.awt.Graphics2D;
 
-import engine.renderer.Renderable;
+import engine.math.Vector2D;
+import engine.object.Interactable;
 
-public class Edge implements Renderable {
+public class Edge implements Interactable {
+    private double id = Math.random();
     public Vertex start;
     public Vertex end;
     public int weight;
@@ -18,5 +21,15 @@ public class Edge implements Renderable {
         g = (Graphics2D) g.create();
         g.drawLine(this.start.x, this.start.y, this.end.x, this.end.y);
         g.dispose();
+    }
+
+    @Override
+    public double getId() {
+        return this.id;
+    }
+
+    @Override
+    public boolean testCollision(Vector2D mouse) {
+        return false;
     }
 }

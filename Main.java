@@ -1,8 +1,8 @@
 import javax.swing.JFrame;
 
-import engine.graph.Edge;
-import engine.graph.GraphPanel;
-import engine.graph.Vertex;
+import engine.object.graph.Edge;
+import engine.object.graph.GraphPanel;
+import engine.object.graph.Vertex;
 import engine.tick.Ticker;
 
 public class Main {

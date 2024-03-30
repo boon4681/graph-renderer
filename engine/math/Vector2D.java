@@ -1,6 +1,15 @@
 package engine.math;
 
 public class Vector2D {
+    public static interface Interpolate {
+        public double run(double from, double to, double steps, double current);
+    }
+
+    private Interpolate LINEAR_INTERPOLATE = (f, t, d, T) -> {
+        double s = T / d;
+        return (1 - s) * f + s * t;
+    };
+
     public double x, y;
 
     public Vector2D() {
@@ -78,6 +87,16 @@ public class Vector2D {
 
     public Vector2D copy() {
         return new Vector2D(this.x, this.y);
+    }
+
+    public Vector2D linearInterpolate(Vector2D to, double steps, double step) {
+        return new Vector2D(this.LINEAR_INTERPOLATE.run(this.x, to.x, steps, step),
+                this.LINEAR_INTERPOLATE.run(this.y, to.y, steps, step));
+    }
+
+    public Vector2D interpolate(Interpolate interpolate, Vector2D to, double steps, double step) {
+        return new Vector2D(interpolate.run(this.x, to.x, steps, step),
+                interpolate.run(this.y, to.y, steps, step));
     }
 
     @Override
