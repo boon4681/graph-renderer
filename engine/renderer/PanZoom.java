@@ -8,6 +8,7 @@ import java.awt.geom.Point2D;
 import engine.event.EventHandler;
 import engine.event.EventListener;
 import engine.event.mouse.MouseDown;
+import engine.event.mouse.MouseMiddleDown;
 import engine.event.mouse.MouseMove;
 import engine.event.mouse.MouseUp;
 import engine.event.mouse.MouseWheel;
@@ -21,20 +22,18 @@ public abstract class PanZoom extends JPanel implements Renderer {
 
     private boolean panning = false;
     private EventHandler handler = new EventHandler();
-    // thanks https://stackoverflow.com/a/75457960
-    private final double windowScale = java.awt.GraphicsEnvironment
-            .getLocalGraphicsEnvironment()
-            .getDefaultScreenDevice()
-            .getDefaultConfiguration()
-            .getDefaultTransform()
-            .getScaleX();
 
     public PanZoom(int init_w, int init_h) {
         this.setSize(init_w, init_h);
         MouseAdapter adapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                handler.dispatchEvent(new MouseDown(e.getPoint()));
+                if (e.getButton() == 1) {
+                    handler.dispatchEvent(new MouseDown(e.getPoint()));
+                }
+                if (e.getButton() == 2) {
+                    handler.dispatchEvent(new MouseMiddleDown(e.getPoint()));
+                }
             }
 
             @Override
@@ -61,23 +60,23 @@ public abstract class PanZoom extends JPanel implements Renderer {
         this.addMouseMotionListener(adapter);
         this.addMouseWheelListener(adapter);
 
-        handler.addEventListener(new EventListener<Point2D>("mousedown", (e) -> {
+        handler.addEventListener(new EventListener<Point2D>("mouse.middle.down", (e) -> {
             this.panning = true;
             this.prevMouse.setLocation(e);
             return true;
         }));
-        handler.addEventListener(new EventListener<Point2D>("mouseup", (e) -> {
+        handler.addEventListener(new EventListener<Point2D>("mouse.up", (e) -> {
             this.panning = false;
             this.prevMouse.setLocation(e);
             return true;
         }));
-        handler.addEventListener(new EventListener<Point2D>("mousemove", (e) -> {
+        handler.addEventListener(new EventListener<Point2D>("mouse.move", (e) -> {
             if (this.panning) {
                 updatePanning(e);
             }
             return true;
         }));
-        handler.addEventListener(new EventListener<MouseWheelEvent>("mousewheel", (e) -> {
+        handler.addEventListener(new EventListener<MouseWheelEvent>("mouse.wheel", (e) -> {
             double d = (e.getPreciseWheelRotation() > 0 ? 0.9 : 1.1);
             zoom *= d;
             updateZooming(e, d);

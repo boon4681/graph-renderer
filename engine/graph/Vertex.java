@@ -21,12 +21,13 @@ public class Vertex implements Renderable {
     }
 
     public void render(Graphics2D g) {
+        int r = radius + 5;
         g = (Graphics2D) g.create();
         g.setColor(Color.ORANGE);
         g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
         g.setColor(Color.BLACK);
         drawCenteredString(g, name, x, y);
-        // g.drawOval(80,80,150,150);
+        g.drawOval(x - r, y - r, r * 2, r * 2);
         g.dispose();
     }
 
