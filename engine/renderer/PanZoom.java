@@ -7,23 +7,19 @@ import java.awt.geom.Point2D;
 
 import engine.event.EventHandler;
 import engine.event.EventListener;
-import engine.event.mouse.MouseClicked;
 import engine.event.mouse.MouseDown;
 import engine.event.mouse.MouseMove;
 import engine.event.mouse.MouseUp;
 import engine.event.mouse.MouseWheel;
-import engine.graph.Edge;
-import engine.graph.Vertex;
-import engine.math.Vector2D;
-
-import java.util.ArrayList;
 import java.awt.geom.AffineTransform;
 
 public abstract class PanZoom extends JPanel implements Renderer {
     private double zoom = 1;
-    private final Point2D start = new Point();
+    private Point prevMouse = new Point();
+    private Point offset = new Point();
+    private AffineTransform transform = new AffineTransform();
+
     private boolean panning = false;
-    private final AffineTransform coord = new AffineTransform();
     private EventHandler handler = new EventHandler();
     // thanks https://stackoverflow.com/a/75457960
     private final double windowScale = java.awt.GraphicsEnvironment
@@ -67,12 +63,12 @@ public abstract class PanZoom extends JPanel implements Renderer {
 
         handler.addEventListener(new EventListener<Point2D>("mousedown", (e) -> {
             this.panning = true;
-            start.setLocation(e);
+            this.prevMouse.setLocation(e);
             return true;
         }));
         handler.addEventListener(new EventListener<Point2D>("mouseup", (e) -> {
             this.panning = false;
-            start.setLocation(e);
+            this.prevMouse.setLocation(e);
             return true;
         }));
         handler.addEventListener(new EventListener<Point2D>("mousemove", (e) -> {
@@ -90,20 +86,23 @@ public abstract class PanZoom extends JPanel implements Renderer {
     }
 
     private void updatePanning(Point2D end) {
-        Point2D dragStart = transformPoint(start);
-        Point2D dragEnd = transformPoint(end);
-        double tx = (dragEnd.getX() - dragStart.getX()) * windowScale;
-        double ty = (dragEnd.getY() - dragStart.getY()) * windowScale;
-        coord.translate(tx, ty);
-        start.setLocation(end);
+        this.transform = new AffineTransform();
+        this.offset.setLocation(
+                this.offset.getX() + end.getX() - prevMouse.getX(),
+                this.offset.getY() + end.getY() - prevMouse.getY());
+        this.transform.translate(this.offset.getX(), this.offset.getY());
+        this.transform.scale(zoom, zoom);
+        this.prevMouse.setLocation(end);
     }
 
     private void updateZooming(MouseWheelEvent e, double d) {
-        Point2D end = transformPoint(e.getPoint());
-
-        coord.translate(end.getX(), end.getY());
-        coord.scale(d, d);
-        coord.translate(-end.getX(), -end.getY());
+        this.transform = new AffineTransform();
+        Point end = e.getPoint();
+        this.offset.setLocation(
+                this.offset.getX() * d + (1 - d) * end.getX(),
+                this.offset.getY() * d + (1 - d) * end.getY());
+        this.transform.translate(this.offset.getX(), this.offset.getY());
+        this.transform.scale(zoom, zoom);
     }
 
     @Override
@@ -111,13 +110,10 @@ public abstract class PanZoom extends JPanel implements Renderer {
         super.paintComponent(g);
         this.getEventHandler().flush();
         Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setTransform(coord);
+        g2d.transform(transform);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        // RenderingHints rh = new RenderingHints(
-        // RenderingHints.KEY_TEXT_ANTIALIASING,
-        // RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        // g2d.setRenderingHints(rh);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         this.painting(g2d);
         g2d.dispose();
     }
@@ -129,20 +125,5 @@ public abstract class PanZoom extends JPanel implements Renderer {
     @Override
     public EventHandler getEventHandler() {
         return this.handler;
-    }
-
-    private Point2D transformPoint(Point2D p1) {
-        AffineTransform inverse = coord;
-        boolean hasInverse = coord.getDeterminant() != 0d;
-        if (hasInverse) {
-            try {
-                inverse = coord.createInverse();
-            } catch (Exception ex) {
-                assert false;
-            }
-        }
-        Point2D p2 = new Point();
-        inverse.transform(p1, p2);
-        return p2;
     }
 }

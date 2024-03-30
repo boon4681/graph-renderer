@@ -24,10 +24,10 @@ public class GraphPanel extends PanZoom implements Tickable {
     @Override
     public void painting(Graphics2D g2d) {
         for (Edge edge : edges) {
-            edge.render(g2d);
+            edge.render( g2d);
         }
         for (Vertex vertex : vertexs) {
-            vertex.render(g2d);
+            vertex.render( g2d);
         }
     }
 }

@@ -1,5 +1,4 @@
 package engine.graph;
-
 import java.awt.Graphics2D;
 
 import engine.renderer.Renderable;

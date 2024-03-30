@@ -24,7 +24,16 @@ public class Vertex implements Renderable {
         g = (Graphics2D) g.create();
         g.setColor(Color.ORANGE);
         g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
+        g.setColor(Color.BLACK);
+        drawCenteredString(g, name, x, y);
         // g.drawOval(80,80,150,150);
         g.dispose();
+    }
+
+    public void drawCenteredString(Graphics2D g, String text, int x, int y) {
+        FontMetrics metrics = g.getFontMetrics(g.getFont());
+        x += -metrics.stringWidth(text) / 2;
+        y += -metrics.getHeight() / 2 + metrics.getAscent();
+        g.drawString(text, x, y);
     }
 }
