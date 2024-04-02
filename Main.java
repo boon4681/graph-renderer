@@ -7,10 +7,8 @@ import engine.renderer.PanelManager;
 import engine.tick.Ticker;
 import visualizer.AutomataVisualizer;
 import visualizer.DijlstraVisualizer;
-import visualizer.GraphEditor;
 import visualizer.KruskalVisualizer;
 import visualizer.PrimsVisualizer;
-import visualizer.logic.automata.Finite;
 
 public class Main {
     public static void main(String[] args) {
@@ -80,22 +78,8 @@ public class Main {
         manager.add("kruskal", kruskal);
         manager.add("dijkstra", dijkstra);
         manager.add("automata", automata);
-        manager.display("prims");
+        manager.display("home");
         ticker.add(manager);
         window.add(manager);
-
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 0, 1 }));
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 0, 0, 1, 1 }));
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 0, 1, 0, 1, 1, 0, 0 }));
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 1, 0, 1, 0, 1 }));
-
-        // Kruskal kruskalTree = new Kruskal();
-
-        // kruskalTree.addEdge(0, 1, 10);
-        // kruskalTree.addEdge(0, 3, 5);
-        // kruskalTree.addEdge(1, 3, 15);
-        // kruskalTree.addEdge(2, 3, 4);
-
-        // kruskalTree.run(4);
     }
 }

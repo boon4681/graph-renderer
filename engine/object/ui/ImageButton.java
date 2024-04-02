@@ -10,7 +10,6 @@ import engine.math.Vector2D;
 import engine.object.interaction.Hoverable;
 import engine.object.ui.Button.OnHoverEvent;
 import engine.renderer.Panel;
-import engine.utils.Graphic;
 import engine.utils.Image;
 
 public class ImageButton extends Hoverable {

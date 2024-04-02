@@ -10,8 +10,6 @@ import engine.object.graph.Vertex;
 import engine.object.ui.Button;
 import visualizer.logic.dijkstra.Dijkstra;
 import visualizer.logic.dijkstra.Dijkstra.DijkstraRecord;
-import visualizer.logic.kruskal.Kruskal;
-import visualizer.logic.kruskal.Kruskal.KruskalRecord;
 
 public class DijlstraVisualizer extends GraphEditor {
 
