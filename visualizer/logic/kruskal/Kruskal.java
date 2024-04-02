@@ -1,6 +1,7 @@
 package visualizer.logic.kruskal;
 
 import java.util.ArrayList;
+import java.util.Stack;
 import java.util.Comparator;
 import java.util.List;
 
@@ -12,6 +13,13 @@ import visualizer.logic.Edge;
  * using Kruskal's algorithm.
  */
 public class Kruskal {
+
+    public static record KruskalRecord(int from, int to) {
+        @Override
+        public final String toString() {
+            return from + " -> " + to;
+        }
+    }
 
     // Defines subset element structure
     private class Subset {
@@ -36,7 +44,7 @@ public class Kruskal {
     }
 
     // Function to run Kruskal's algorithm
-    public void run(int vertices) {
+    public Stack<KruskalRecord> run(int vertices) {
         int V = vertices;
 
         // Sort the edges in non-decreasing order
@@ -48,13 +56,15 @@ public class Kruskal {
             }
         });
 
-        kruskals(V, graphEdges);
+        return kruskals(V, graphEdges);
     }
 
     // Function to find the MST
-    private void kruskals(int V, List<Edge> edges) {
+    private Stack<KruskalRecord> kruskals(int V, List<Edge> edges) {
         int j = 0;
         int noOfEdges = 0;
+
+        Stack<KruskalRecord> records = new Stack<>();
 
         // Allocate memory for creating V subsets
         Subset subsets[] = new Subset[V];
@@ -88,18 +98,10 @@ public class Kruskal {
             j++;
         }
 
-        // Print the contents of result[] to display the
-        // built MST
-        System.out.println(
-                "Following are the edges of the constructed MST:");
-        int minCost = 0;
         for (int i = 0; i < noOfEdges; i++) {
-            System.out.println(results[i].start + " -> "
-                    + results[i].end + " weight is "
-                    + results[i].weight);
-            minCost += results[i].weight;
+            records.push(new KruskalRecord(results[i].start, results[i].end));
         }
-        System.out.println("Total cost of MST: " + minCost);
+        return records;
     }
 
     // Function to unite two disjoint sets

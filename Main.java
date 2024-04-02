@@ -6,9 +6,9 @@ import engine.renderer.Panel;
 import engine.renderer.PanelManager;
 import engine.tick.Ticker;
 import visualizer.AutomataVisualizer;
-import visualizer.GraphEditor;
+import visualizer.DijlstraVisualizer;
+import visualizer.KruskalVisualizer;
 import visualizer.PrimsVisualizer;
-import visualizer.logic.automata.Finite;
 
 public class Main {
     public static void main(String[] args) {
@@ -54,13 +54,13 @@ public class Main {
             panel.add(new Text("Prim's algorithm", 160, 77, 20));
         });
 
-        Panel kruskal = new GraphEditor(window, 1000, 600, (panel) -> {
+        Panel kruskal = new KruskalVisualizer(window, 1000, 600, (panel) -> {
             Button back = new Button("<<", 10, 10, 60, 30);
             back.onClicked = () -> manager.display("home");
             panel.add(back);
             panel.add(new Text("Kruskal's algorithm", 160, 77, 20));
         });
-        Panel dijkstra = new GraphEditor(window, 1000, 600, (panel) -> {
+        Panel dijkstra = new DijlstraVisualizer(window, 1000, 600, (panel) -> {
             Button back = new Button("<<", 10, 10, 60, 30);
             back.onClicked = () -> manager.display("home");
             panel.add(back);
@@ -69,10 +69,7 @@ public class Main {
         Panel automata = new AutomataVisualizer(window, 1000, 600, (panel) -> {
             Button back = new Button("<<", 10, 10, 60, 30);
             back.onClicked = () -> manager.display("home");
-            Button run = new Button("Run", 10, 55, 140, 30);
-            // run.onClicked = () -> manager.display("home");
             panel.add(back);
-            panel.add(run);
             panel.add(new Text("Finite automata", 160, 77, 20));
         });
 
@@ -81,22 +78,8 @@ public class Main {
         manager.add("kruskal", kruskal);
         manager.add("dijkstra", dijkstra);
         manager.add("automata", automata);
-        manager.display("prims");
+        manager.display("home");
         ticker.add(manager);
         window.add(manager);
-
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 0, 1 }));
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 0, 0, 1, 1 }));
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 0, 1, 0, 1, 1, 0, 0 }));
-        System.out.println(Finite.integerInputAutomata(new Integer[] { 1, 0, 1, 0, 1 }));
-
-        // Kruskal kruskalTree = new Kruskal();
-
-        // kruskalTree.addEdge(0, 1, 10);
-        // kruskalTree.addEdge(0, 3, 5);
-        // kruskalTree.addEdge(1, 3, 15);
-        // kruskalTree.addEdge(2, 3, 4);
-
-        // kruskalTree.run(4);
     }
 }

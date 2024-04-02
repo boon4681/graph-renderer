@@ -126,6 +126,16 @@ public class GraphPanel extends PanZoom {
         this.objects.remove(e);
     }
 
+    public Edge findEdge(Vertex v1, Vertex v2) {
+        for (Edge edge : this.getEdges()) {
+            if (edge.start.getId() == v1.getId() && edge.end.getId() == v2.getId()
+                    || edge.start.getId() == v2.getId() && edge.end.getId() == v1.getId()) {
+                return edge;
+            }
+        }
+        return null;
+    }
+
     @Override
     protected void beforePainting(Graphics2D g) {
     }

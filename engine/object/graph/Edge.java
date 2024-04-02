@@ -18,6 +18,7 @@ public class Edge extends Hoverable {
     public Vertex start;
     public Vertex end;
     public double weight;
+    public boolean highlight = false;
 
     public Edge(Vertex start, Vertex end, double weight) {
         this.start = start;
@@ -30,6 +31,9 @@ public class Edge extends Hoverable {
         if (this.hover) {
             g.setColor(Color.RED);
             g.setStroke(new BasicStroke(2));
+        }
+        if (this.highlight) {
+            g.setColor(Color.BLUE);
         }
         Vector2D v = start.getLocation().copy().add(end.getLocation()).mult(0.5);
         v.y -= 10;

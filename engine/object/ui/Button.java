@@ -1,6 +1,5 @@
 package engine.object.ui;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics2D;
