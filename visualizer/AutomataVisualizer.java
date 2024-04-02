@@ -1,12 +1,17 @@
 package visualizer;
 
 import java.awt.Component;
+import java.util.Arrays;
+
+import javax.swing.JOptionPane;
 
 import engine.object.graph.Arc;
 import engine.object.graph.Arrow;
 import engine.object.graph.GraphPanel;
 import engine.object.graph.Vertex;
+import engine.object.ui.Button;
 import engine.renderer.Panel;
+import visualizer.logic.automata.Finite;
 
 public class AutomataVisualizer extends Panel {
 
@@ -26,7 +31,22 @@ public class AutomataVisualizer extends Panel {
 
         graph.add(s0);
         graph.add(s1);
-        graph.add(s2);
+        Button run = new Button("Run", 10, 55, 140, 30);
+        run.onClicked = () -> {
+            String text = JOptionPane.showInputDialog(
+                    parent,
+                    "Input some sequence of 0,1",
+                    null);
+            Integer[] ints = text.chars().map((e) -> e - '0').boxed().toArray(Integer[]::new);
+            for (int i : ints) {
+                if (i != 0 && i != 1) {
+                    JOptionPane.showMessageDialog(parent, "Failed, Found some not 0,1 characters");
+                    return;
+                }
+            }
+            System.out.println(Finite.integerInputAutomata(ints));
+        };
+        this.add(run);
         this.add(graph);
         if (initializer != null) {
             initializer.init(this);

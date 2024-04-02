@@ -11,62 +11,72 @@ import visualizer.logic.Edge;
  */
 
 public class Prims {
-    int vertices;
-    List<List<Edge>> adjacencyList;
+    private final int MAX_VALUE = Integer.MAX_VALUE;
+    private Map<Integer, List<Edge>> graph = new HashMap<>();
 
-    public Prims(int vertices) {
-        this.vertices = vertices;
-        adjacencyList = new ArrayList<>(vertices);
-        for (int i = 0; i < vertices; i++) {
-            adjacencyList.add(new ArrayList<>());
+    public static record PrimsRecord(int from, int to) {
+        @Override
+        public final String toString() {
+            return from + " -> " + to;
         }
     }
 
     public void addEdge(int start, int end, int weight) {
-        Edge edge = new Edge(start, end, weight);
-        adjacencyList.get(start).add(edge);
-        adjacencyList.get(end).add(edge);
+        List<Edge> edgeList = graph.getOrDefault(start, new ArrayList<>());
+        edgeList.add(new Edge(end, weight));
+        graph.put(start, edgeList);
+        edgeList = graph.getOrDefault(end, new ArrayList<>());
+        edgeList.add(new Edge(start, weight));
+        graph.put(end, edgeList);
     }
 
-    public void run(int startVertex) {
-        boolean[] visited = new boolean[vertices];
-        int[] parent = new int[vertices];
-        int[] key = new int[vertices];
+    public Stack<PrimsRecord> run(int startVertex) {
+        boolean[] visited = new boolean[graph.size()];
+        PriorityQueue<Edge> pq = new PriorityQueue<>((a, b) -> {
+            int weightDiff = a.weight - b.weight;
+            if (weightDiff == 0) {
+                return a.v - b.v; // Ensure least dest is chosen for same weight
+            }
+            return weightDiff;
+        });
+        int[] dist = new int[graph.size()];
+        Arrays.fill(dist, MAX_VALUE);
+        int[] parent = new int[graph.size()];
+        Arrays.fill(parent, -1);
 
-        for (int i = 0; i < vertices; i++) {
-            key[i] = Integer.MAX_VALUE;
-        }
-
-        PriorityQueue<Edge> pq = new PriorityQueue<>(vertices, Comparator.comparingInt(e -> e.weight));
-        key[startVertex] = 0;
-        pq.offer(new Edge(-1, startVertex, 0));
+        dist[startVertex] = 0;
+        pq.offer(new Edge(startVertex, 0));
 
         while (!pq.isEmpty()) {
-            Edge minEdge = pq.poll();
-            int u = minEdge.end;
-
+            int u = pq.poll().v;
             if (visited[u]) {
                 continue;
             }
-
             visited[u] = true;
-
-            for (Edge edge : adjacencyList.get(u)) {
-                int v = edge.start == u ? edge.end : edge.start;
-                int weight = edge.weight;
-
-                if (!visited[v] && weight < key[v]) {
-                    parent[v] = u;
-                    key[v] = weight;
-                    pq.offer(new Edge(u, v, weight));
+            List<Edge> edgeList = graph.get(u);
+            if (edgeList != null) {
+                for (Edge edge : edgeList) {
+                    int v = edge.v;
+                    int weight = edge.weight;
+                    if (!visited[v] && dist[v] > weight) {
+                        dist[v] = weight;
+                        parent[v] = u;
+                        pq.offer(new Edge(v, weight));
+                    }
                 }
             }
         }
-        int weightSummed = 0;
-        for (int i = 1; i < vertices; i++) {
-            weightSummed += key[i];
-            System.out.println(parent[i] + " -> " + i + " weight is " + key[i]);
+        Stack<PrimsRecord> stack = new Stack<>();
+        // int totalWeight = 0;
+        for (int i = 0; i < graph.size(); i++) {
+            if (parent[i] != -1) {
+                stack.push(new PrimsRecord(parent[i], i));
+                // System.out.println(parent[i] + " --> " + i + " (weight: " + weight + ")");
+                // totalWeight += weight;
+            }
         }
-        System.out.println("Total cost of MST: " + weightSummed);
+        return stack;
+        // System.out.println("Total weight of the Minimum Spanning Tree: " +
+        // totalWeight);
     }
 }
