@@ -12,9 +12,11 @@ import engine.event.mouse.MouseMiddleDown;
 import engine.event.mouse.MouseMove;
 import engine.event.mouse.MouseUp;
 import engine.event.mouse.MouseWheel;
+import engine.tick.Tickable;
+
 import java.awt.geom.AffineTransform;
 
-public abstract class PanZoom extends JPanel implements Renderer {
+public abstract class PanZoom extends JPanel implements Renderer,Tickable {
     private double zoom = 1;
     private Point prevMouse = new Point();
     private Point offset = new Point();
