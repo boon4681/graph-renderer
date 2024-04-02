@@ -2,88 +2,104 @@ package engine.renderer;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.JPanel;
 import java.awt.geom.Point2D;
 
-import engine.event.EventHandler;
-import engine.event.EventListener;
+import engine.event.mouse.MouseClicked;
 import engine.event.mouse.MouseDown;
 import engine.event.mouse.MouseMiddleDown;
 import engine.event.mouse.MouseMove;
+import engine.event.mouse.MouseRightDown;
 import engine.event.mouse.MouseUp;
 import engine.event.mouse.MouseWheel;
-import engine.tick.Tickable;
+import engine.event.pan.Panning;
 
 import java.awt.geom.AffineTransform;
 
-public abstract class PanZoom extends JPanel implements Renderer,Tickable {
-    private double zoom = 1;
+public abstract class PanZoom extends Panel {
     private Point prevMouse = new Point();
     private Point offset = new Point();
     private AffineTransform transform = new AffineTransform();
 
     private boolean panning = false;
-    private EventHandler handler = new EventHandler();
 
-    public PanZoom(int init_w, int init_h) {
-        this.setSize(init_w, init_h);
+    public PanZoom(int init_w, int init_h, Initializer initializer) {
+        super(init_w, init_h, true, initializer);
         MouseAdapter adapter = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (e.getButton() == 1) {
-                    handler.dispatchEvent(new MouseDown(e.getPoint()));
+                    Point point = new Point();
+                    point.setLocation(
+                            e.getPoint().getX() - offset.getX(),
+                            e.getPoint().getY() - offset.getY());
+                    handler.dispatchEvent(new MouseDown(point));
+                    handler.dispatchEvent(new MouseClicked(point));
                 }
                 if (e.getButton() == 2) {
-                    handler.dispatchEvent(new MouseMiddleDown(e.getPoint()));
+                    panning = true;
+                    prevMouse.setLocation(e.getPoint());
+                    Point point = new Point();
+                    point.setLocation(
+                            e.getPoint().getX() - offset.getX(),
+                            e.getPoint().getY() - offset.getY());
+                    handler.dispatchEvent(new MouseMiddleDown(point));
+                }
+                if (e.getButton() == 3) {
+                    Point point = new Point();
+                    point.setLocation(
+                            e.getPoint().getX() - offset.getX(),
+                            e.getPoint().getY() - offset.getY());
+                    handler.dispatchEvent(new MouseRightDown(point));
                 }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                handler.dispatchEvent(new MouseUp(e.getPoint()));
+                panning = false;
+                prevMouse.setLocation(e.getPoint());
+                Point point = new Point();
+                point.setLocation(
+                        e.getPoint().getX() - offset.getX(),
+                        e.getPoint().getY() - offset.getY());
+                handler.dispatchEvent(new MouseUp(point));
             }
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                handler.dispatchEvent(new MouseMove(e.getPoint()));
+                if (panning) {
+                    updatePanning(e.getPoint());
+                }
+                Point point = new Point();
+                point.setLocation(
+                        e.getPoint().getX() - offset.getX(),
+                        e.getPoint().getY() - offset.getY());
+                handler.dispatchEvent(new MouseMove(point));
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                handler.dispatchEvent(new MouseMove(e.getPoint()));
+                if (panning) {
+                    updatePanning(e.getPoint());
+                    handler.dispatchEvent(new Panning(e.getPoint()));
+                }
+                Point point = new Point();
+                point.setLocation(
+                        e.getPoint().getX() - offset.getX(),
+                        e.getPoint().getY() - offset.getY());
+                handler.dispatchEvent(new MouseMove(point));
             }
 
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
+                double d = (e.getPreciseWheelRotation() > 0 ? 0.9 : 1.1);
+                zoom *= d;
+                updateZooming(e, d);
                 handler.dispatchEvent(new MouseWheel(e));
             }
         };
         this.addMouseListener(adapter);
         this.addMouseMotionListener(adapter);
-        this.addMouseWheelListener(adapter);
-
-        handler.addEventListener(new EventListener<Point2D>("mouse.middle.down", (e) -> {
-            this.panning = true;
-            this.prevMouse.setLocation(e);
-            return true;
-        }));
-        handler.addEventListener(new EventListener<Point2D>("mouse.up", (e) -> {
-            this.panning = false;
-            this.prevMouse.setLocation(e);
-            return true;
-        }));
-        handler.addEventListener(new EventListener<Point2D>("mouse.move", (e) -> {
-            if (this.panning) {
-                updatePanning(e);
-            }
-            return true;
-        }));
-        handler.addEventListener(new EventListener<MouseWheelEvent>("mouse.wheel", (e) -> {
-            double d = (e.getPreciseWheelRotation() > 0 ? 0.9 : 1.1);
-            zoom *= d;
-            updateZooming(e, d);
-            return true;
-        }));
+        // this.addMouseWheelListener(adapter);
     }
 
     private void updatePanning(Point2D end) {
@@ -108,7 +124,7 @@ public abstract class PanZoom extends JPanel implements Renderer,Tickable {
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        this.beforePainting((Graphics2D) g);
         this.getEventHandler().flush();
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.transform(transform);
@@ -117,14 +133,16 @@ public abstract class PanZoom extends JPanel implements Renderer,Tickable {
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         this.painting(g2d);
         g2d.dispose();
+
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        this.afterPainting(g2);
+        g2.dispose();
     }
 
-    public void tick(double dt) {
-        repaint();
-    }
+    protected abstract void beforePainting(Graphics2D g);
 
-    @Override
-    public EventHandler getEventHandler() {
-        return this.handler;
-    }
+    protected abstract void afterPainting(Graphics2D g);
 }

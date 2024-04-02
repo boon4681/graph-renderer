@@ -1,18 +1,20 @@
 package engine.object.graph;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 
 import engine.math.Vector2D;
-import engine.object.Interactable;
+import engine.object.graph.GraphPanel.MODE;
+import engine.object.interaction.HoverNDraggable;
+import engine.renderer.Panel;
+import engine.utils.Graphic;
 
-public class Vertex implements Interactable {
+public class Vertex extends HoverNDraggable {
     private double id = Math.random();
     public int x;
     public int y;
     public String name;
     private int radius = 20;
-    private boolean hover = false;
-    private boolean drag = false;
 
     public Vertex(int x, int y) {
         this("NaN", x, y);
@@ -24,24 +26,20 @@ public class Vertex implements Interactable {
         this.y = y;
     }
 
-    public void render(Graphics2D g) {
+    public void render(Panel parent, Graphics2D g) {
         int r = radius + 5;
         g = (Graphics2D) g.create();
         g.setColor(Color.ORANGE);
         g.fillOval(x - radius, y - radius, radius * 2, radius * 2);
         g.setColor(Color.BLACK);
-        drawCenteredString(g, name, x, y);
+        Graphic.drawCenteredString(g, name, x, y);
         if (hover) {
+            if (((GraphPanel) parent).mode == MODE.DELETE) {
+                g.setColor(Color.RED);
+            }
             g.drawOval(x - r, y - r, r * 2, r * 2);
         }
         g.dispose();
-    }
-
-    public void drawCenteredString(Graphics2D g, String text, int x, int y) {
-        FontMetrics metrics = g.getFontMetrics(g.getFont());
-        x += -metrics.stringWidth(text) / 2;
-        y += -metrics.getHeight() / 2 + metrics.getAscent();
-        g.drawString(text, x, y);
     }
 
     @Override
@@ -50,38 +48,34 @@ public class Vertex implements Interactable {
     }
 
     @Override
-    public boolean testCollision(Vector2D mouse) {
-        if (mouse.copy().sub(new Vector2D(this.x, this.y)).mag() < this.radius) {
+    public boolean testCollision(double zoom, Vector2D mouse) {
+        if (mouse.copy().sub(this.getLocation()).mag() < this.radius * zoom) {
             return true;
         }
         return false;
     }
 
     @Override
-    public void onMouseEnter(Vector2D p) {
-        this.hover = true;
-    }
-
-    @Override
-    public void onMouseLeave(Vector2D p) {
-        this.hover = false;
-    }
-
-    @Override
-    public void onMouseDown(Vector2D p) {
-        this.drag = true;
-    }
-
-    @Override
-    public void onMouseUp(Vector2D p) {
-        this.drag = false;
-    }
-
-    @Override
-    public void onMouseMove(Vector2D p) {
+    public void onMouseMove(Panel parent, Vector2D p) {
         if (this.drag) {
             this.x = (int) p.x;
             this.y = (int) p.y;
+            ((GraphPanel) parent).prerender.start = null;
         }
+    }
+
+    @Override
+    public void onClick(Panel parent, Vector2D p) {
+        if (((GraphPanel) parent).mode == MODE.EDGE) {
+            ((GraphPanel) parent).createEdge(this);
+        }
+        if (((GraphPanel) parent).mode == MODE.DELETE) {
+            ((GraphPanel) parent).deleteObject(this);
+        }
+    }
+
+    @Override
+    public Vector2D getLocation() {
+        return new Vector2D(this.x, this.y);
     }
 }
